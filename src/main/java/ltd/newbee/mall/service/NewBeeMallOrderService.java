@@ -5,7 +5,6 @@ import ltd.newbee.mall.api.mall.vo.NewBeeMallOrderDetailVO;
 import ltd.newbee.mall.api.mall.vo.NewBeeMallOrderItemVO;
 import ltd.newbee.mall.api.mall.vo.NewBeeMallShoppingCartItemVO;
 import ltd.newbee.mall.entity.MallUser;
-import ltd.newbee.mall.entity.MallUserAddress;
 import ltd.newbee.mall.entity.NewBeeMallOrder;
 import ltd.newbee.mall.util.PageQueryUtil;
 import ltd.newbee.mall.util.PageResult;
@@ -58,7 +57,7 @@ public interface NewBeeMallOrderService {
 
     String paySuccess(String orderNo, int payType);
 
-    String saveOrder(MallUser loginMallUser, MallUserAddress address, List<NewBeeMallShoppingCartItemVO> itemsForSave);
+    String saveOrder(MallUser loginMallUser, List<NewBeeMallShoppingCartItemVO> itemsForSave);
 
     /**
      * 后台分页

@@ -189,7 +189,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
 
     @Override
     @Transactional
-    public String saveOrder(MallUser loginMallUser, MallUserAddress address, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems) {
+    public String saveOrder(MallUser loginMallUser, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems) {
         List<Long> itemIdList = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getCartItemId).collect(Collectors.toList());
         List<Long> goodsIds = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getGoodsId).collect(Collectors.toList());
         List<NewBeeMallGoods> newBeeMallGoods = newBeeMallGoodsMapper.selectByPrimaryKeys(goodsIds);
@@ -240,10 +240,6 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                 newBeeMallOrder.setExtraInfo(extraInfo);
                 //生成订单项并保存订单项纪录
                 if (newBeeMallOrderMapper.insertSelective(newBeeMallOrder) > 0) {
-                    //生成订单收货地址快照，并保存至数据库
-                    NewBeeMallOrderAddress newBeeMallOrderAddress = new NewBeeMallOrderAddress();
-                    BeanUtil.copyProperties(address, newBeeMallOrderAddress);
-                    newBeeMallOrderAddress.setOrderId(newBeeMallOrder.getOrderId());
                     //生成所有的订单项快照，并保存至数据库
                     List<NewBeeMallOrderItem> newBeeMallOrderItems = new ArrayList<>();
                     for (NewBeeMallShoppingCartItemVO newBeeMallShoppingCartItemVO : myShoppingCartItems) {
@@ -255,7 +251,7 @@ public class NewBeeMallOrderServiceImpl implements NewBeeMallOrderService {
                         newBeeMallOrderItems.add(newBeeMallOrderItem);
                     }
                     //保存至数据库
-                    if (newBeeMallOrderItemMapper.insertBatch(newBeeMallOrderItems) > 0 && newBeeMallOrderAddressMapper.insertSelective(newBeeMallOrderAddress) > 0) {
+                    if (newBeeMallOrderItemMapper.insertBatch(newBeeMallOrderItems) > 0) {
                         //所有操作成功后，将订单号返回，以供Controller方法跳转到订单详情
                         return orderNo;
                     }

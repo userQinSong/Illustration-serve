@@ -13,7 +13,6 @@ import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.config.annotation.TokenToMallUser;
 import ltd.newbee.mall.api.mall.vo.NewBeeMallShoppingCartItemVO;
 import ltd.newbee.mall.entity.MallUser;
-import ltd.newbee.mall.entity.MallUserAddress;
 import ltd.newbee.mall.service.NewBeeMallOrderService;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
 import ltd.newbee.mall.service.NewBeeMallUserAddressService;
@@ -43,10 +42,10 @@ public class NewBeeMallOrderAPI {
     private NewBeeMallUserAddressService newBeeMallUserAddressService;
 
     @PostMapping("/saveOrder")
-    @ApiOperation(value = "生成订单接口", notes = "传参为地址id和待结算的购物项id数组")
+    @ApiOperation(value = "生成订单接口", notes = "传参为待结算的购物项id数组")
     public Result<String> saveOrder(@ApiParam(value = "订单参数") @RequestBody SaveOrderParam saveOrderParam, @TokenToMallUser MallUser loginMallUser) {
         int priceTotal = 0;
-        if (saveOrderParam == null || saveOrderParam.getCartItemIds() == null || saveOrderParam.getAddressId() == null) {
+        if (saveOrderParam == null || saveOrderParam.getCartItemIds() == null) {
             NewBeeMallException.fail(ServiceResultEnum.PARAM_ERROR.getResult());
         }
         if (saveOrderParam.getCartItemIds().length < 1) {
@@ -64,12 +63,8 @@ public class NewBeeMallOrderAPI {
             if (priceTotal < 1) {
                 NewBeeMallException.fail("价格异常");
             }
-            MallUserAddress address = newBeeMallUserAddressService.getMallUserAddressById(saveOrderParam.getAddressId());
-            if (!loginMallUser.getUserId().equals(address.getUserId())) {
-                return ResultGenerator.genFailResult(ServiceResultEnum.REQUEST_FORBIDEN_ERROR.getResult());
-            }
             //保存订单并返回订单号
-            String saveOrderResult = newBeeMallOrderService.saveOrder(loginMallUser, address, itemsForSave);
+            String saveOrderResult = newBeeMallOrderService.saveOrder(loginMallUser, itemsForSave);
             Result result = ResultGenerator.genSuccessResult();
             result.setData(saveOrderResult);
             return result;
@@ -86,8 +81,8 @@ public class NewBeeMallOrderAPI {
     @GetMapping("/order")
     @ApiOperation(value = "订单列表接口", notes = "传参为页码")
     public Result<PageResult<List<NewBeeMallOrderListVO>>> orderList(@ApiParam(value = "页码") @RequestParam(required = false) Integer pageNumber,
-                            @ApiParam(value = "订单状态:0.待支付 1.待确认 2.待发货 3:已发货 4.交易成功") @RequestParam(required = false) Integer status,
-                            @TokenToMallUser MallUser loginMallUser) {
+                                                                     @ApiParam(value = "订单状态:0.待支付 1.待确认 2.待发货 3:已发货 4.交易成功") @RequestParam(required = false) Integer status,
+                                                                     @TokenToMallUser MallUser loginMallUser) {
         Map params = new HashMap(8);
         if (pageNumber == null || pageNumber < 1) {
             pageNumber = 1;

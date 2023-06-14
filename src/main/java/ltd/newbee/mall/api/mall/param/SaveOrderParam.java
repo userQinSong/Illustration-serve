@@ -14,7 +14,4 @@ public class SaveOrderParam implements Serializable {
 
     @ApiModelProperty("订单项id数组")
     private Long[] cartItemIds;
-
-    @ApiModelProperty("地址id")
-    private Long addressId;
 }
