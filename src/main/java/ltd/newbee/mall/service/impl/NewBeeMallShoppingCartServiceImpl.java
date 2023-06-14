@@ -13,8 +13,6 @@ import ltd.newbee.mall.entity.NewBeeMallGoods;
 import ltd.newbee.mall.entity.NewBeeMallShoppingCartItem;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
 import ltd.newbee.mall.util.BeanUtil;
-import ltd.newbee.mall.util.PageQueryUtil;
-import ltd.newbee.mall.util.PageResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -178,12 +176,4 @@ public class NewBeeMallShoppingCartServiceImpl implements NewBeeMallShoppingCart
         return newBeeMallShoppingCartItemVOS;
     }
 
-    @Override
-    public PageResult getMyShoppingCartItems(PageQueryUtil pageUtil) {
-        List<NewBeeMallShoppingCartItemVO> newBeeMallShoppingCartItemVOS = new ArrayList<>();
-        List<NewBeeMallShoppingCartItem> newBeeMallShoppingCartItems = newBeeMallShoppingCartItemMapper.findMyNewBeeMallCartItems(pageUtil);
-        int total = newBeeMallShoppingCartItemMapper.getTotalMyNewBeeMallCartItems(pageUtil);
-        PageResult pageResult = new PageResult(getNewBeeMallShoppingCartItemVOS(newBeeMallShoppingCartItemVOS, newBeeMallShoppingCartItems), total, pageUtil.getLimit(), pageUtil.getPage());
-        return pageResult;
-    }
 }

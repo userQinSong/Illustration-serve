@@ -18,19 +18,4 @@ public interface NewBeeMallIndexConfigService {
      */
     List<NewBeeMallIndexConfigGoodsVO> getConfigGoodsesForIndex(int configType, int number);
 
-    /**
-     * 后台分页
-     *
-     * @param pageUtil
-     * @return
-     */
-    PageResult getConfigsPage(PageQueryUtil pageUtil);
-
-    String saveIndexConfig(IndexConfig indexConfig);
-
-    String updateIndexConfig(IndexConfig indexConfig);
-
-    IndexConfig getIndexConfigById(Long id);
-
-    Boolean deleteBatch(Long[] ids);
 }

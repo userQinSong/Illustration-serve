@@ -1,7 +1,6 @@
 
 package ltd.newbee.mall.config;
 
-import ltd.newbee.mall.entity.AdminUserToken;
 import ltd.newbee.mall.entity.MallUser;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +27,7 @@ public class Swagger3Config {
     public Docket api() {
         return new Docket(DocumentationType.OAS_30)
                 .apiInfo(apiInfo())
-                .ignoredParameterTypes(MallUser.class, AdminUserToken.class)
+                .ignoredParameterTypes(MallUser.class)
                 .select()
                 .apis(RequestHandlerSelectors.basePackage("ltd.newbee.mall.api"))
                 .paths(PathSelectors.any())

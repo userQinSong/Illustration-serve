@@ -34,21 +34,6 @@ public class NewBeeMallShoppingCartAPI {
     @Resource
     private NewBeeMallShoppingCartService newBeeMallShoppingCartService;
 
-    @GetMapping("/shop-cart/page")
-    @ApiOperation(value = "购物车列表(每页默认5条)", notes = "传参为页码")
-    public Result<PageResult<List<NewBeeMallShoppingCartItemVO>>> cartItemPageList(Integer pageNumber, @TokenToMallUser MallUser loginMallUser) {
-        Map params = new HashMap(8);
-        if (pageNumber == null || pageNumber < 1) {
-            pageNumber = 1;
-        }
-        params.put("userId", loginMallUser.getUserId());
-        params.put("page", pageNumber);
-        params.put("limit", Constants.SHOPPING_CART_PAGE_LIMIT);
-        //封装分页请求参数
-        PageQueryUtil pageUtil = new PageQueryUtil(params);
-        return ResultGenerator.genSuccessResult(newBeeMallShoppingCartService.getMyShoppingCartItems(pageUtil));
-    }
-
     @GetMapping("/shop-cart")
     @ApiOperation(value = "购物车列表(网页移动端不分页)", notes = "")
     public Result<List<NewBeeMallShoppingCartItemVO>> cartItemList(@TokenToMallUser MallUser loginMallUser) {

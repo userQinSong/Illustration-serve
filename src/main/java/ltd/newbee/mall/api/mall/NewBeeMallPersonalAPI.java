@@ -1,17 +1,20 @@
 
 package ltd.newbee.mall.api.mall;
 
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import ltd.newbee.mall.api.mall.param.MallUserLoginParam;
 import ltd.newbee.mall.api.mall.param.MallUserRegisterParam;
-import ltd.newbee.mall.api.mall.param.MallUserUpdateParam;
+import ltd.newbee.mall.api.mall.vo.NewBeeMallUserVO;
 import ltd.newbee.mall.common.Constants;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.config.annotation.TokenToMallUser;
-import ltd.newbee.mall.api.mall.vo.NewBeeMallUserVO;
 import ltd.newbee.mall.entity.MallUser;
 import ltd.newbee.mall.service.NewBeeMallUserService;
-import ltd.newbee.mall.util.*;
+import ltd.newbee.mall.util.BeanUtil;
+import ltd.newbee.mall.util.NumberUtil;
+import ltd.newbee.mall.util.Result;
+import ltd.newbee.mall.util.ResultGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -83,21 +86,6 @@ public class NewBeeMallPersonalAPI {
         }
         //注册失败
         return ResultGenerator.genFailResult(registerResult);
-    }
-
-    @PutMapping("/user/info")
-    @ApiOperation(value = "修改用户信息", notes = "")
-    public Result updateInfo(@RequestBody @ApiParam("用户信息") MallUserUpdateParam mallUserUpdateParam, @TokenToMallUser MallUser loginMallUser) {
-        Boolean flag = newBeeMallUserService.updateUserInfo(mallUserUpdateParam, loginMallUser.getUserId());
-        if (flag) {
-            //返回成功
-            Result result = ResultGenerator.genSuccessResult();
-            return result;
-        } else {
-            //返回失败
-            Result result = ResultGenerator.genFailResult("修改失败");
-            return result;
-        }
     }
 
     @GetMapping("/user/info")

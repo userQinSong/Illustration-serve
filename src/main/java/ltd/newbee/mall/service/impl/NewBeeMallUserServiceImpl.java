@@ -1,9 +1,7 @@
 
 package ltd.newbee.mall.service.impl;
 
-import ltd.newbee.mall.api.mall.param.MallUserUpdateParam;
 import ltd.newbee.mall.common.Constants;
-import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.dao.MallUserMapper;
 import ltd.newbee.mall.dao.NewBeeMallUserTokenMapper;
@@ -15,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class NewBeeMallUserServiceImpl implements NewBeeMallUserService {
@@ -95,42 +92,8 @@ public class NewBeeMallUserServiceImpl implements NewBeeMallUserService {
     }
 
     @Override
-    public Boolean updateUserInfo(MallUserUpdateParam mallUser, Long userId) {
-        MallUser user = mallUserMapper.selectByPrimaryKey(userId);
-        if (user == null) {
-            NewBeeMallException.fail(ServiceResultEnum.DATA_NOT_EXIST.getResult());
-        }
-        user.setNickName(mallUser.getNickName());
-        //user.setPasswordMd5(mallUser.getPasswordMd5());
-        //若密码为空字符，则表明用户不打算修改密码，使用原密码保存
-        if (!MD5Util.MD5Encode("", "UTF-8").equals(mallUser.getPasswordMd5())){
-            user.setPasswordMd5(mallUser.getPasswordMd5());
-        }
-        user.setIntroduceSign(mallUser.getIntroduceSign());
-        if (mallUserMapper.updateByPrimaryKeySelective(user) > 0) {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
     public Boolean logout(Long userId) {
         return newBeeMallUserTokenMapper.deleteByPrimaryKey(userId) > 0;
     }
 
-    @Override
-    public PageResult getNewBeeMallUsersPage(PageQueryUtil pageUtil) {
-        List<MallUser> mallUsers = mallUserMapper.findMallUserList(pageUtil);
-        int total = mallUserMapper.getTotalMallUsers(pageUtil);
-        PageResult pageResult = new PageResult(mallUsers, total, pageUtil.getLimit(), pageUtil.getPage());
-        return pageResult;
-    }
-
-    @Override
-    public Boolean lockUsers(Long[] ids, int lockStatus) {
-        if (ids.length < 1) {
-            return false;
-        }
-        return mallUserMapper.lockUserBatch(ids, lockStatus) > 0;
-    }
 }

@@ -65,11 +65,4 @@ public interface NewBeeMallShoppingCartService {
      */
     List<NewBeeMallShoppingCartItemVO> getCartItemsForSettle(List<Long> cartItemIds, Long newBeeMallUserId);
 
-    /**
-     * 我的购物车(分页数据)
-     *
-     * @param pageUtil
-     * @return
-     */
-    PageResult getMyShoppingCartItems(PageQueryUtil pageUtil);
 }
