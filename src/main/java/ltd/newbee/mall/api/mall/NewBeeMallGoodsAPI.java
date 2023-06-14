@@ -36,11 +36,10 @@ public class NewBeeMallGoodsAPI {
     @ApiOperation(value = "商品搜索接口", notes = "根据关键字和分类id进行搜索")
     public Result<PageResult<List<NewBeeMallSearchGoodsVO>>> search(@RequestParam(required = false) @ApiParam(value = "搜索关键字") String keyword,
                                                                     @RequestParam(required = false) @ApiParam(value = "分类id") Long goodsCategoryId,
-                                                                    @RequestParam(required = false) @ApiParam(value = "orderBy") String orderBy,
                                                                     @RequestParam(required = false) @ApiParam(value = "页码") Integer pageNumber,
                                                                     @TokenToMallUser MallUser loginMallUser) {
         
-        logger.info("goods search api,keyword={},goodsCategoryId={},orderBy={},pageNumber={},userId={}", keyword, goodsCategoryId, orderBy, pageNumber, loginMallUser.getUserId());
+        logger.info("goods search api,keyword={},goodsCategoryId={},orderBy={},pageNumber={},userId={}", keyword, goodsCategoryId, pageNumber, loginMallUser.getUserId());
 
         Map params = new HashMap(8);
         //两个搜索参数都为空，直接返回异常
@@ -56,9 +55,6 @@ public class NewBeeMallGoodsAPI {
         //对keyword做过滤 去掉空格
         if (StringUtils.hasText(keyword)) {
             params.put("keyword", keyword);
-        }
-        if (StringUtils.hasText(orderBy)) {
-            params.put("orderBy", orderBy);
         }
         //搜索上架状态下的商品
         params.put("goodsSellStatus", Constants.SELL_STATUS_UP);

@@ -1,6 +1,4 @@
-
 package ltd.newbee.mall.config;
-
 import ltd.newbee.mall.entity.AdminUserToken;
 import ltd.newbee.mall.entity.MallUser;
 import org.springframework.context.annotation.Bean;
