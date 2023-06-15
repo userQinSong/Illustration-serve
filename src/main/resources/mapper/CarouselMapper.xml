@@ -7,16 +7,11 @@
         <result column="carousel_url" jdbcType="VARCHAR" property="carouselUrl"/>
         <result column="redirect_url" jdbcType="VARCHAR" property="redirectUrl"/>
         <result column="carousel_rank" jdbcType="INTEGER" property="carouselRank"/>
-        <result column="is_deleted" jdbcType="TINYINT" property="isDeleted"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
-        <result column="create_user" jdbcType="INTEGER" property="createUser"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
-        <result column="update_user" jdbcType="INTEGER" property="updateUser"/>
     </resultMap>
     <sql id="Base_Column_List">
-        carousel_id
-        , carousel_url, redirect_url, carousel_rank, is_deleted, create_time,
-    create_user, update_time, update_user
+        carousel_id, carousel_url, redirect_url, carousel_rank, create_time, update_time
     </sql>
 
 
@@ -24,7 +19,6 @@
         select
         <include refid="Base_Column_List"/>
         from tb_newbee_mall_carousel
-        where is_deleted = 0
         order by carousel_rank desc
         limit #{number}
     </select>

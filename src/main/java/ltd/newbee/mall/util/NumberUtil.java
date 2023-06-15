@@ -40,15 +40,4 @@ public class NumberUtil {
         return (int) ((random * num));
     }
 
-    /**
-     * 生成订单流水号
-     *
-     * @return
-     */
-    public static String genOrderNo() {
-        StringBuffer buffer = new StringBuffer(String.valueOf(System.currentTimeMillis()));
-        int num = genRandomNum(4);
-        buffer.append(num);
-        return buffer.toString();
-    }
 }

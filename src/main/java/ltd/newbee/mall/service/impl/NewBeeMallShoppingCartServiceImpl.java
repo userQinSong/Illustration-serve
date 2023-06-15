@@ -9,12 +9,15 @@ import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.api.mall.vo.NewBeeMallShoppingCartItemVO;
 import ltd.newbee.mall.dao.NewBeeMallGoodsMapper;
 import ltd.newbee.mall.dao.NewBeeMallShoppingCartItemMapper;
+import ltd.newbee.mall.entity.MallUser;
 import ltd.newbee.mall.entity.NewBeeMallGoods;
 import ltd.newbee.mall.entity.NewBeeMallShoppingCartItem;
+import ltd.newbee.mall.entity.StockNumDTO;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
 import ltd.newbee.mall.util.BeanUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
@@ -29,6 +32,7 @@ public class NewBeeMallShoppingCartServiceImpl implements NewBeeMallShoppingCart
 
     @Autowired
     private NewBeeMallGoodsMapper newBeeMallGoodsMapper;
+
 
     @Override
     public String saveNewBeeMallCartItem(SaveCartItemParam saveCartItemParam, Long userId) {
@@ -174,6 +178,49 @@ public class NewBeeMallShoppingCartServiceImpl implements NewBeeMallShoppingCart
             }
         }
         return newBeeMallShoppingCartItemVOS;
+    }
+
+
+    @Override
+    @Transactional
+    public String settlement(MallUser loginMallUser, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems) {
+        List<Long> itemIdList = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getCartItemId).collect(Collectors.toList());
+        List<Long> goodsIds = myShoppingCartItems.stream().map(NewBeeMallShoppingCartItemVO::getGoodsId).collect(Collectors.toList());
+        List<NewBeeMallGoods> newBeeMallGoods = newBeeMallGoodsMapper.selectByPrimaryKeys(goodsIds);
+        //检查是否包含已下架商品
+        List<NewBeeMallGoods> goodsListNotSelling = newBeeMallGoods.stream()
+                .filter(newBeeMallGoodsTemp -> newBeeMallGoodsTemp.getGoodsSellStatus() != Constants.SELL_STATUS_UP)
+                .collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(goodsListNotSelling)) {
+            //goodsListNotSelling 对象非空则表示有下架商品
+            NewBeeMallException.fail(goodsListNotSelling.get(0).getGoodsName() + "已下架，无法结算");
+        }
+        Map<Long, NewBeeMallGoods> newBeeMallGoodsMap = newBeeMallGoods.stream().collect(Collectors.toMap(NewBeeMallGoods::getGoodsId, Function.identity(), (entity1, entity2) -> entity1));
+        //判断商品库存
+        for (NewBeeMallShoppingCartItemVO shoppingCartItemVO : myShoppingCartItems) {
+            //查出的商品中不存在购物车中的这条关联商品数据，直接返回错误提醒
+            if (!newBeeMallGoodsMap.containsKey(shoppingCartItemVO.getGoodsId())) {
+                NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
+            }
+            //存在数量大于库存的情况，直接返回错误提醒
+            if (shoppingCartItemVO.getGoodsCount() > newBeeMallGoodsMap.get(shoppingCartItemVO.getGoodsId()).getStockNum()) {
+                NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_COUNT_ERROR.getResult());
+            }
+        }
+        //删除购物项
+        if (!CollectionUtils.isEmpty(itemIdList) && !CollectionUtils.isEmpty(goodsIds) && !CollectionUtils.isEmpty(newBeeMallGoods)) {
+            if (newBeeMallShoppingCartItemMapper.deleteBatch(itemIdList) > 0) {
+                List<StockNumDTO> stockNumDTOS = BeanUtil.copyList(myShoppingCartItems, StockNumDTO.class);
+                int updateStockNumResult = newBeeMallGoodsMapper.updateStockNum(stockNumDTOS);
+                if (updateStockNumResult < 1) {
+                    NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_COUNT_ERROR.getResult());
+                }
+                return ServiceResultEnum.SUCCESS.getResult();
+            }
+            NewBeeMallException.fail(ServiceResultEnum.DB_ERROR.getResult());
+        }
+        NewBeeMallException.fail(ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult());
+        return ServiceResultEnum.SHOPPING_ITEM_ERROR.getResult();
     }
 
 }

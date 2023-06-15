@@ -51,9 +51,6 @@ public class TokenToMallUserMethodArgumentResolver implements HandlerMethodArgum
                 if (mallUser == null) {
                     NewBeeMallException.fail(ServiceResultEnum.USER_NULL_ERROR.getResult());
                 }
-                if (mallUser.getLockedFlag().intValue() == 1) {
-                    NewBeeMallException.fail(ServiceResultEnum.LOGIN_USER_LOCKED_ERROR.getResult());
-                }
                 return mallUser;
             } else {
                 NewBeeMallException.fail(ServiceResultEnum.NOT_LOGIN_ERROR.getResult());

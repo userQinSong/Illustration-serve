@@ -1,10 +1,6 @@
 
 package ltd.newbee.mall.service;
 
-import ltd.newbee.mall.api.mall.param.MallUserUpdateParam;
-import ltd.newbee.mall.util.PageQueryUtil;
-import ltd.newbee.mall.util.PageResult;
-
 public interface NewBeeMallUserService {
 
     /**

@@ -31,17 +31,13 @@ public class NewBeeMallIndexAPI {
     private NewBeeMallIndexConfigService newBeeMallIndexConfigService;
 
     @GetMapping("/index-infos")
-    @ApiOperation(value = "获取首页数据", notes = "轮播图、新品、推荐等")
+    @ApiOperation(value = "获取首页数据", notes = "轮播图、热销等")
     public Result<IndexInfoVO> indexInfo() {
         IndexInfoVO indexInfoVO = new IndexInfoVO();
         List<NewBeeMallIndexCarouselVO> carousels = newBeeMallCarouselService.getCarouselsForIndex(Constants.INDEX_CAROUSEL_NUMBER);
         List<NewBeeMallIndexConfigGoodsVO> hotGoodses = newBeeMallIndexConfigService.getConfigGoodsesForIndex(IndexConfigTypeEnum.INDEX_GOODS_HOT.getType(), Constants.INDEX_GOODS_HOT_NUMBER);
-        List<NewBeeMallIndexConfigGoodsVO> newGoodses = newBeeMallIndexConfigService.getConfigGoodsesForIndex(IndexConfigTypeEnum.INDEX_GOODS_NEW.getType(), Constants.INDEX_GOODS_NEW_NUMBER);
-        List<NewBeeMallIndexConfigGoodsVO> recommendGoodses = newBeeMallIndexConfigService.getConfigGoodsesForIndex(IndexConfigTypeEnum.INDEX_GOODS_RECOMMOND.getType(), Constants.INDEX_GOODS_RECOMMOND_NUMBER);
         indexInfoVO.setCarousels(carousels);
         indexInfoVO.setHotGoodses(hotGoodses);
-        indexInfoVO.setNewGoodses(newGoodses);
-        indexInfoVO.setRecommendGoodses(recommendGoodses);
         return ResultGenerator.genSuccessResult(indexInfoVO);
     }
 }

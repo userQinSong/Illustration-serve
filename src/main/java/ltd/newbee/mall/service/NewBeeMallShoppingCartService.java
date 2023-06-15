@@ -4,9 +4,11 @@ package ltd.newbee.mall.service;
 import ltd.newbee.mall.api.mall.param.SaveCartItemParam;
 import ltd.newbee.mall.api.mall.param.UpdateCartItemParam;
 import ltd.newbee.mall.api.mall.vo.NewBeeMallShoppingCartItemVO;
+import ltd.newbee.mall.entity.MallUser;
 import ltd.newbee.mall.entity.NewBeeMallShoppingCartItem;
 import ltd.newbee.mall.util.PageQueryUtil;
 import ltd.newbee.mall.util.PageResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -65,4 +67,6 @@ public interface NewBeeMallShoppingCartService {
      */
     List<NewBeeMallShoppingCartItemVO> getCartItemsForSettle(List<Long> cartItemIds, Long newBeeMallUserId);
 
+    @Transactional
+    String settlement(MallUser loginMallUser, List<NewBeeMallShoppingCartItemVO> myShoppingCartItems);
 }

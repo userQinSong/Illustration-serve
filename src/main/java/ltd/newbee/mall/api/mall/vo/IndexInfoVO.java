@@ -15,10 +15,4 @@ public class IndexInfoVO implements Serializable {
 
     @ApiModelProperty("首页热销商品(列表)")
     private List<NewBeeMallIndexConfigGoodsVO> hotGoodses;
-
-    @ApiModelProperty("首页新品推荐(列表)")
-    private List<NewBeeMallIndexConfigGoodsVO> newGoodses;
-
-    @ApiModelProperty("首页推荐商品(列表)")
-    private List<NewBeeMallIndexConfigGoodsVO> recommendGoodses;
 }

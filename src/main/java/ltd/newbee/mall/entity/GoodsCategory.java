@@ -18,15 +18,11 @@ public class GoodsCategory {
 
     private Integer categoryRank;
 
-    private Byte isDeleted;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
-    private Integer createUser;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
-    private Integer updateUser;
 }

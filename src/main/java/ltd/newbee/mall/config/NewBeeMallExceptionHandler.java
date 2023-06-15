@@ -47,8 +47,6 @@ public class NewBeeMallExceptionHandler {
             result.setMessage(e.getMessage());
             if (e.getMessage().equals(ServiceResultEnum.NOT_LOGIN_ERROR.getResult()) || e.getMessage().equals(ServiceResultEnum.TOKEN_EXPIRE_ERROR.getResult())) {
                 result.setResultCode(416);
-            } else if (e.getMessage().equals(ServiceResultEnum.ADMIN_NOT_LOGIN_ERROR.getResult()) || e.getMessage().equals(ServiceResultEnum.ADMIN_TOKEN_EXPIRE_ERROR.getResult())) {
-                result.setResultCode(419);
             }
         } else {
             e.printStackTrace();

@@ -29,8 +29,6 @@ public class NewBeeMallUserServiceImpl implements NewBeeMallUserService {
         }
         MallUser registerUser = new MallUser();
         registerUser.setLoginName(loginName);
-        registerUser.setNickName(loginName);
-        registerUser.setIntroduceSign(Constants.USER_INTRO);
         String passwordMD5 = MD5Util.MD5Encode(password, "UTF-8");
         registerUser.setPasswordMd5(passwordMD5);
         if (mallUserMapper.insertSelective(registerUser) > 0) {
@@ -43,9 +41,6 @@ public class NewBeeMallUserServiceImpl implements NewBeeMallUserService {
     public String login(String loginName, String passwordMD5) {
         MallUser user = mallUserMapper.selectByLoginNameAndPasswd(loginName, passwordMD5);
         if (user != null) {
-            if (user.getLockedFlag() == 1) {
-                return ServiceResultEnum.LOGIN_USER_LOCKED_ERROR.getResult();
-            }
             //登录后即执行修改token的操作
             String token = getNewToken(System.currentTimeMillis() + "", user.getUserId());
             MallUserToken mallUserToken = newBeeMallUserTokenMapper.selectByPrimaryKey(user.getUserId());

@@ -7,11 +7,11 @@ import lombok.Data;
 import java.io.Serializable;
 
 /**
- * 保存订单param
+ * 购物车结算param
  */
 @Data
-public class SaveOrderParam implements Serializable {
+public class SettlementParam implements Serializable {
 
-    @ApiModelProperty("订单项id数组")
+    @ApiModelProperty("结算项id数组")
     private Long[] cartItemIds;
 }

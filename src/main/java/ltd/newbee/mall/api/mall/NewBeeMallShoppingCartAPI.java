@@ -3,9 +3,10 @@ package ltd.newbee.mall.api.mall;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import ltd.newbee.mall.api.mall.param.SaveCartItemParam;
+import ltd.newbee.mall.api.mall.param.SettlementParam;
 import ltd.newbee.mall.api.mall.param.UpdateCartItemParam;
-import ltd.newbee.mall.common.Constants;
 import ltd.newbee.mall.common.NewBeeMallException;
 import ltd.newbee.mall.common.ServiceResultEnum;
 import ltd.newbee.mall.config.annotation.TokenToMallUser;
@@ -13,8 +14,6 @@ import ltd.newbee.mall.api.mall.vo.NewBeeMallShoppingCartItemVO;
 import ltd.newbee.mall.entity.MallUser;
 import ltd.newbee.mall.entity.NewBeeMallShoppingCartItem;
 import ltd.newbee.mall.service.NewBeeMallShoppingCartService;
-import ltd.newbee.mall.util.PageQueryUtil;
-import ltd.newbee.mall.util.PageResult;
 import ltd.newbee.mall.util.Result;
 import ltd.newbee.mall.util.ResultGenerator;
 import org.springframework.util.CollectionUtils;
@@ -22,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @Api(value = "v1", tags = "5.新蜂商城购物车相关接口")
@@ -84,7 +81,7 @@ public class NewBeeMallShoppingCartAPI {
     }
 
     @GetMapping("/shop-cart/settle")
-    @ApiOperation(value = "根据购物项id数组查询购物项明细", notes = "确认订单页面使用")
+    @ApiOperation(value = "根据购物项id数组查询购物项明细", notes = "购物车页面使用")
     public Result<List<NewBeeMallShoppingCartItemVO>> toSettle(Long[] cartItemIds, @TokenToMallUser MallUser loginMallUser) {
         if (cartItemIds.length < 1) {
             NewBeeMallException.fail("参数异常");
@@ -104,5 +101,36 @@ public class NewBeeMallShoppingCartAPI {
             }
         }
         return ResultGenerator.genSuccessResult(itemsForSettle);
+    }
+
+    @PostMapping("/shop-cart/settlement")
+    @ApiOperation(value = "购物车结算接口", notes = "传参为待结算的购物项id数组")
+    public Result<String> settlement(@ApiParam(value = "结算参数") @RequestBody SettlementParam settlementParam, @TokenToMallUser MallUser loginMallUser) {
+        int priceTotal = 0;
+        if (settlementParam == null || settlementParam.getCartItemIds() == null) {
+            NewBeeMallException.fail(ServiceResultEnum.PARAM_ERROR.getResult());
+        }
+        if (settlementParam.getCartItemIds().length < 1) {
+            NewBeeMallException.fail(ServiceResultEnum.PARAM_ERROR.getResult());
+        }
+        List<NewBeeMallShoppingCartItemVO> itemsForSave = newBeeMallShoppingCartService.getCartItemsForSettle(Arrays.asList(settlementParam.getCartItemIds()), loginMallUser.getUserId());
+        if (CollectionUtils.isEmpty(itemsForSave)) {
+            //无数据
+            NewBeeMallException.fail("参数异常");
+        } else {
+            //总价
+            for (NewBeeMallShoppingCartItemVO newBeeMallShoppingCartItemVO : itemsForSave) {
+                priceTotal += newBeeMallShoppingCartItemVO.getGoodsCount() * newBeeMallShoppingCartItemVO.getSellingPrice();
+            }
+            if (priceTotal < 1) {
+                NewBeeMallException.fail("价格异常");
+            }
+            //结算并返回信息
+            String saveOrderResult = newBeeMallShoppingCartService.settlement(loginMallUser, itemsForSave);
+            Result result = ResultGenerator.genSuccessResult();
+            result.setData(saveOrderResult);
+            return result;
+        }
+        return ResultGenerator.genFailResult("结算单失败");
     }
 }
