@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ltd.newbee.mall.dao.MallUserMapper">
-    <resultMap id="BaseResultMap" type="ltd.newbee.mall.entity.MallUser">
+<mapper namespace="ltd.mall618.mall.dao.MallUserMapper">
+    <resultMap id="BaseResultMap" type="ltd.mall618.mall.entity.MallUser">
         <id column="user_id" jdbcType="BIGINT" property="userId"/>
         <result column="login_name" jdbcType="VARCHAR" property="loginName"/>
         <result column="password_md5" jdbcType="VARCHAR" property="passwordMd5"/>
@@ -15,23 +15,23 @@
     <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_user
+        from mall_user
         where user_id = #{userId,jdbcType=BIGINT}
     </select>
     <select id="selectByLoginName" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_user
+        from mall_user
         where login_name = #{loginName}
     </select>
     <select id="selectByLoginNameAndPasswd" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_user
+        from mall_user
         where login_name = #{loginName} and password_md5 = #{password}
     </select>
-    <insert id="insertSelective" parameterType="ltd.newbee.mall.entity.MallUser">
-        insert into tb_newbee_mall_user
+    <insert id="insertSelective" parameterType="ltd.mall618.mall.entity.MallUser">
+        insert into mall_user
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="userId != null">
                 user_id,

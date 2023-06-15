@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ltd.newbee.mall.dao.GoodsCategoryMapper">
-    <resultMap id="BaseResultMap" type="ltd.newbee.mall.entity.GoodsCategory">
+<mapper namespace="ltd.mall618.mall.dao.GoodsCategoryMapper">
+    <resultMap id="BaseResultMap" type="ltd.mall618.mall.entity.GoodsCategory">
         <id column="category_id" jdbcType="BIGINT" property="categoryId"/>
         <result column="category_level" jdbcType="TINYINT" property="categoryLevel"/>
         <result column="parent_id" jdbcType="BIGINT" property="parentId"/>
@@ -17,7 +17,7 @@
     <select id="selectByLevelAndParentIdsAndNumber" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_goods_category
+        from mall_goods_category
         where parent_id in
         <foreach item="parentId" collection="parentIds" open="(" separator="," close=")">
             #{parentId,jdbcType=BIGINT}

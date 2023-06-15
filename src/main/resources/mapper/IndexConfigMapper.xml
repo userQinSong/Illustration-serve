@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="ltd.newbee.mall.dao.IndexConfigMapper">
-    <resultMap id="BaseResultMap" type="ltd.newbee.mall.entity.IndexConfig">
+<mapper namespace="ltd.mall618.mall.dao.IndexConfigMapper">
+    <resultMap id="BaseResultMap" type="ltd.mall618.mall.entity.IndexConfig">
         <id column="config_id" jdbcType="BIGINT" property="configId"/>
         <result column="config_name" jdbcType="VARCHAR" property="configName"/>
         <result column="config_type" jdbcType="TINYINT" property="configType"/>
@@ -19,7 +19,7 @@
     <select id="findIndexConfigsByTypeAndNum" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
-        from tb_newbee_mall_index_config
+        from mall_index_config
         where config_type = #{configType}
         order by config_rank desc
         limit #{number}
