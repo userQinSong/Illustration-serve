@@ -7,13 +7,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="newbee-mall-api" />
         <module name="mall-api" />
+        <module name="illustration-server" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="illustration-server" options="-parameters" />
       <module name="mall-api" options="-parameters" />
+      <module name="newbee-mall-api" options="-parameters" />
     </option>
   </component>
 </project>

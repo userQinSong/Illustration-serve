@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alibaba.illustration.dao.ill.AnalysisDao">
+    <resultMap id="AnalysisMap" type="alibaba.illustration.entity.ill.vo.analysis.ChartVo">
+        <result column="date_group" jdbcType="VARCHAR" property="group_name"/>
+        <result column="sum_value" jdbcType="BIGINT" property="group_value"/>
+    </resultMap>
+    <select id="queryDataGroupByYear"
+            parameterType="alibaba.illustration.entity.ill.pageParams.analysis.AnalysisParam"
+            resultMap="AnalysisMap">
+        SELECT
+            <if test="search_type == 'remain_time'.toString()">
+                sum( remain_time ) AS sum_value,
+            </if>
+            <if test="search_type == 'user'.toString()">
+                count(*) AS sum_value,
+            </if>
+            CONCAT( YEAR ( create_time ), '-', MONTH ( create_time ) ) AS date_group
+        <if test="search_type == 'remain_time'.toString()">
+            FROM
+                relation_user_remain_create
+        </if>
+        <if test="search_type == 'user'.toString()">
+            FROM
+                user
+        </if>
+        WHERE
+            create_time BETWEEN #{sql_begin_date}
+            AND #{sql_end_date}
+        GROUP BY
+            date_group
+        ORDER BY
+	        date_group
+    </select>
+
+    <select id="queryDataGroupByHourTime"
+            parameterType="alibaba.illustration.entity.ill.pageParams.analysis.AnalysisParam"
+            resultMap="AnalysisMap">
+        SELECT
+            date_format( create_time, '%H' ) AS date_group,
+            sum( remain_time ) AS sum_value
+        FROM
+            relation_user_remain_create
+        WHERE
+            create_time BETWEEN #{sql_begin_date}
+            AND #{sql_end_date}
+        GROUP BY
+            date_group
+        ORDER BY
+            sum_value
+        DESC
+    </select>
+
+    <select id="queryAllPicLikeCountGroupByPicType"
+            parameterType="alibaba.illustration.entity.ill.pageParams.analysis.AnalysisParam"
+            resultMap="AnalysisMap">
+            SELECT
+                A.type_name AS group_name,
+                COALESCE ( B.group_value, 0 ) AS group_value
+            FROM
+                cat_type A
+                LEFT JOIN (
+                SELECT
+                    pic_type,
+                    sum( is_like ) AS group_value
+                FROM
+                    relation_user_pic_attitude Q
+                    JOIN pic A ON Q.pic_id = A.pic_id
+                GROUP BY
+                    A.pic_type
+                ) B ON A.type_name = B.pic_type
+    </select>
+
+    <select id="queryAllPicoltLikeCountGroupByPicoltTag"
+            parameterType="alibaba.illustration.entity.ill.pageParams.analysis.AnalysisParam"
+            resultMap="AnalysisMap">
+            SELECT
+                picolt_tag As group_name,
+                sum( is_like ) AS group_value
+            FROM
+                relation_user_picolt_attitude Q
+                JOIN picolt A ON Q.picolt_id = A.picolt_id
+            GROUP BY
+                A.picolt_tag
+    </select>
+
+    <select id="sumWebsiteCount" resultType="java.lang.Long">
+        SELECT
+        <if test="which == 'remain_time'.toString()">
+            COALESCE ( sum(remain_time), 0 )
+        </if>
+        <if test="which != 'remain_time'.toString()">
+            count(*)
+        </if>
+        FROM
+        <if test="which == 'remain_time'.toString()">
+            relation_user_remain_create
+        </if>
+        <if test="which == 'pic_count'.toString()">
+            pic
+        </if>
+        <if test="which == 'user_count'.toString()">
+            user
+        </if>
+        <if test="which == 'comment_count'.toString()">
+            comment
+        </if>
+        <where>
+            <if test="type != null and type != ''">
+                <if test="type == 'month'.toString()">
+                    DATE_FORMAT(create_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+                </if>
+                <if test="type== 'day'.toString()">
+                    to_days(create_time) = to_days(now())
+                </if>
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alibaba.illustration.dao.ill.UserInfoDao">
+	<resultMap id="UserPageResultMap" type="alibaba.illustration.entity.ill.pageResult.UserPageResult">
+		<association property="userVo" resultMap="UserVoResultMap"/>
+		<association property="userConcernVo" resultMap="UserConcernResultMap"/>
+	</resultMap>
+	<resultMap id="UserResultMap" type="alibaba.illustration.entity.ill.entity.User">
+		<id column="user_id" jdbcType="VARCHAR" property="user_id"/>
+		<result column="user_name" jdbcType="VARCHAR" property="user_name"/>
+		<result column="phone_number" jdbcType="VARCHAR" property="phone_number"/>
+		<result column="potrait_src" jdbcType="VARCHAR" property="potrait_src"/>
+		<result column="rank" jdbcType="INTEGER" property="rank"/>
+		<result column="upload" jdbcType="BIGINT" property="upload"/>
+		<result column="big_back_img" jdbcType="VARCHAR" property="big_back_img"/>
+		<result column="gender" jdbcType="VARCHAR" property="gender"/>
+		<result column="brief" jdbcType="VARCHAR" property="brief"/>
+		<result column="create_time" property="create_time"/>
+	</resultMap>
+    <resultMap id="UserVoResultMap" extends="UserResultMap" type="alibaba.illustration.entity.ill.vo.UserVo.UserVo">
+        <result column="picolt_be_like_count" jdbcType="BIGINT" property="picolt_be_like_count"/>
+        <result column="picolt_be_collect_count" jdbcType="BIGINT" property="picolt_be_collect_count"/>
+        <result column="picolt_be_down_count" jdbcType="BIGINT" property="picolt_be_down_count"/>
+        <result column="picolt_upload" jdbcType="BIGINT" property="picolt_upload"/>
+        <result column="pic_be_like_count" jdbcType="BIGINT" property="pic_be_like_count"/>
+        <result column="pic_be_collect_count" jdbcType="BIGINT" property="pic_be_collect_count"/>
+        <result column="pic_be_down_count" jdbcType="BIGINT" property="pic_be_down_count"/>
+        <result column="pic_upload" jdbcType="BIGINT" property="pic_upload"/>
+        <result column="attention" jdbcType="BIGINT" property="attention"/>
+        <result column="be_attention" jdbcType="BIGINT" property="be_attention"/>
+    </resultMap>
+	<resultMap id="UserConcernResultMap" extends="UserResultMap" type="alibaba.illustration.entity.ill.vo.UserVo.UserConcernVo">
+		<result column="fans_id" jdbcType="VARCHAR" property="fans_id"/>
+		<result column="attention_id" jdbcType="VARCHAR" property="attention_id"/>
+		<result column="follow_time" jdbcType="DATE" property="follow_time"/>
+		<result column="is_person_attention" jdbcType="BOOLEAN" property="is_person_attention"/>
+	</resultMap>
+    <select id="queryUserById" resultMap="UserVoResultMap">
+        select * from user
+        where user_id=#{user_id}
+    </select>
+    <select id="queryUserInfoDetailByUserId" resultMap="UserVoResultMap">
+    SELECT
+    * 
+    FROM
+	(-- //计算并获取某用户其创建所有图片态度和（被喜欢数，被收藏数，被下载数）
+	SELECT COALESCE
+		( R.user_id, #{user_id} ) AS user_id,
+		COALESCE ( sum( Q.is_like ), 0 ) AS pic_be_like_count,
+		COALESCE ( sum( Q.is_collect ), 0 ) AS pic_be_collect_count,
+		COALESCE ( sum( Q.down_count ), 0 ) AS pic_be_down_count 
+	FROM
+		relation_user_pic_create R
+		LEFT JOIN relation_user_pic_attitude Q ON R.pic_id = Q.pic_id 
+	WHERE
+		R.user_id = #{user_id} and R.is_delete = 0
+	) A
+	JOIN (-- //计算并获取某用户其创建所有图集态度和（被喜欢数，被收藏数，被下载数）
+	SELECT COALESCE
+		( R.user_id, #{user_id} ) AS user_id,
+		sum( COALESCE ( Q.is_like, 0 ) ) AS picolt_be_like_count,
+		sum( COALESCE ( Q.is_collect, 0 ) ) AS picolt_be_collect_count,
+		sum( COALESCE ( Q.down_count, 0 ) ) AS picolt_be_down_count 
+	FROM
+		relation_user_picolt_create R
+		LEFT JOIN relation_user_picolt_attitude Q ON R.picolt_id = Q.picolt_id 
+	WHERE
+		R.user_id = #{user_id} and R.is_delete = 0
+	) B ON A.user_id = B.user_id
+	JOIN (-- //根据user_id查询某个用户所有粉丝数量和（be_attention：自己是被关注方）
+	SELECT COALESCE
+		( Q.user_id, #{user_id} ) AS user_id,
+		COALESCE ( count( * ), 0 ) AS be_attention 
+	FROM
+		relation_user_fans_create Q 
+	WHERE
+		Q.user_id = #{user_id} and Q.is_delete = 0
+	) C ON A.user_id = C.user_id
+	JOIN (-- //根据user_id查询某个用户所有主动关注的数量和（attention：自己是粉丝方）
+	SELECT COALESCE
+		( Q.fans_id, #{user_id} ) AS user_id,
+		COALESCE ( count( * ), 0 ) AS attention 
+	FROM
+		relation_user_fans_create Q 
+	WHERE
+		Q.fans_id = #{user_id} and Q.is_delete = 0
+	) D ON A.user_id = D.user_id
+	JOIN (
+	SELECT COALESCE
+		( R.user_id, #{user_id} ) AS user_id,
+		count( * ) AS picolt_upload 
+	FROM
+		relation_user_picolt_create R 
+	WHERE
+		R.user_id = #{user_id} and R.is_delete = 0
+	) E ON A.user_id = E.user_id
+	JOIN (
+	SELECT COALESCE
+		( R.user_id, #{user_id} ) AS user_id,
+		count( * ) AS pic_upload 
+	FROM
+		relation_user_pic_create R
+	WHERE
+		R.user_id = #{user_id} and R.is_delete = 0
+	) F ON A.user_id = F.user_id
+    </select>
+	<select id="queryAllConcernByUserParam"
+			parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam"
+			resultMap="UserPageResultMap">
+		<if test="attitude_person_id != null and attitude_person_id != ''">
+			SELECT
+			Q.*,
+			NOT isNull( R.user_id ) AS is_person_attention
+			FROM
+			(
+		</if>
+		<if test='search_user_type == "fans"'>
+			SELECT
+			Q.user_id as attention_id,
+			Q.fans_id as fans_id,
+			Q.follow_time,
+			A.*
+			FROM
+			relation_user_fans_create Q
+			JOIN USER A ON Q.fans_id = A.user_id
+			where
+			Q.user_id = #{user_id} and Q.is_delete = 0
+		</if>
+		<if test='search_user_type == "attention"'>
+			SELECT
+			Q.user_id as attention_id,
+			Q.fans_id as fans_id,
+			Q.follow_time,
+			A.*
+			FROM
+			relation_user_fans_create Q
+			JOIN USER A ON Q.user_id = A.user_id
+			where
+			Q.fans_id = #{user_id} and Q.is_delete = 0
+		</if>
+		<if test="attitude_person_id != null and attitude_person_id != ''">
+			) Q
+			LEFT JOIN ( SELECT * FROM relation_user_fans_create Q
+			where Q.fans_id = #{attitude_person_id} and Q.is_delete = 0) R ON
+			<if test='search_user_type == "fans"'>
+				Q.fans_id = R.user_id
+			</if>
+			<if test='search_user_type == "attention"'>
+				Q.attention_id = R.user_id
+			</if>
+		</if>
+	</select>
+
+	<select id="findUserByPhoneNumber" resultMap="UserResultMap">
+		select * from user where phone_number = #{phone_number}
+	</select>
+	<sql id="user_key">
+		<trim suffixOverrides=",">
+			<if test="user_id!=null and user_id!=''">
+				user_id,
+			</if>
+			<if test="user_name!=null and user_name!=''">
+				user_name,
+			</if>
+			<if test="password!=null and password!=''">
+				password,
+			</if>
+			<if test="phone_number!=null and phone_number!=''">
+				phone_number,
+			</if>
+			<if test="potrait_src!=null and potrait_src!=''">
+				potrait_src,
+			</if>
+			<if test="rank!=null and rank!=''">
+				rank,
+			</if>
+			<if test="big_back_img!=null and big_back_img!=''">
+				big_back_img,
+			</if>
+			<if test="gender!=null and gender!=''">
+				gender,
+			</if>
+		</trim>
+	</sql>
+	<sql id="user_value">
+		<trim suffixOverrides=",">
+			<if test="user_id!=null and user_id!=''">
+				#{user_id},
+			</if>
+			<if test="user_name!=null and user_name!=''">
+				#{user_name},
+			</if>
+			<if test="password!=null and password!=''">
+				#{password},
+			</if>
+			<if test="phone_number!=null and phone_number!=''">
+				#{phone_number},
+			</if>
+			<if test="potrait_src!=null and potrait_src!=''">
+				#{potrait_src},
+			</if>
+			<if test="rank!=null and rank!=''">
+				#{rank},
+			</if>
+			<if test="big_back_img!=null and big_back_img!=''">
+				#{big_back_img},
+			</if>
+			<if test="gender!=null and gender!=''">
+				#{gender},
+			</if>
+		</trim>
+	</sql>
+	<insert id="logoutNewUser" parameterType="alibaba.illustration.entity.ill.entity.User">
+		insert into user(<include refid="user_key"/>)
+		values(<include refid="user_value"/>)
+	</insert>
+
+	<select id="hasExistAttention" resultType="java.lang.Boolean">
+		select count(*) from relation_user_fans_create
+		where user_id = #{attention_id} and fans_id =#{fans_id} limit 1
+	</select>
+	<insert id="insertRelationUserAttention">
+		insert into relation_user_fans_create(user_id,fans_id,follow_time)
+		values(#{attention_id},#{fans_id},#{create_time})
+	</insert>
+
+	<update id="updateRelationUserAttention" parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam">
+		UPDATE relation_user_fans_create Q
+		SET Q.is_delete = abs( Q.is_delete - 1 )
+		WHERE
+		Q.user_id = #{user_id} AND Q.fans_id = #{attitude_person_id}
+	</update>
+
+	<select id="queryRelationUserAttention" parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam" resultType="java.lang.Boolean">
+		SELECT
+		count( * )
+		FROM
+		relation_user_fans_create Q
+		WHERE
+		Q.user_id = #{user_id}
+		AND Q.fans_id = #{attitude_person_id}
+		AND Q.is_delete = 0
+	</select>
+
+	<update id="updateUserInfo" parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam">
+		update user
+		set
+		<if test="edited_username != null and edited_username != ''">
+			user_name = #{edited_username},
+		</if>
+		<if test="edited_brief != null and edited_brief != ''">
+			brief = #{edited_brief}
+		</if>
+		where user_id = #{user_id}
+	</update>
+
+	<insert id="insertRelationUserRemain">
+		insert into relation_user_remain_create(user_id,remain_time,create_time)
+		values(#{user_id},#{remain_time},#{create_time})
+	</insert>
+
+	<update id="updateRelationUserRemain" parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam">
+		UPDATE relation_user_remain_create Q
+		SET Q.remain_time = Q.remain_time + #{remain_time}
+		WHERE
+		Q.user_id = #{user_id}
+	</update>
+
+	<select id="queryRelationUserRemain" parameterType="alibaba.illustration.entity.ill.pageParams.user.UserParam" resultType="java.lang.Boolean">
+		SELECT
+		count( * )
+		FROM
+		relation_user_remain_create Q
+		WHERE
+		Q.user_id = #{user_id}
+		AND Q.is_delete = 0
+	</select>
+
+</mapper>

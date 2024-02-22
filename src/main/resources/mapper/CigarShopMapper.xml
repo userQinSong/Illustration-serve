@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alibaba.illustration.dao.CigarShopDao">
+    <resultMap id="ShopResultMap" type="alibaba.illustration.entity.CigarShop">
+        <id column="shop_id" jdbcType="VARCHAR" property="shop_id"/>
+        <result column="shop_name" jdbcType="VARCHAR" property="shop_name"/>
+        <result column="shop_boss" jdbcType="VARCHAR" property="shop_boss"/>
+        <result column="shop_loc" jdbcType="VARCHAR" property="shop_loc"/>
+        <result column="shop_pic" jdbcType="VARCHAR" property="shop_pic"/>
+        <result column="shop_phone" jdbcType="VARCHAR" property="shop_phone"/>
+        <result column="customer_arrive_count" jdbcType="INTEGER" property="customer_arrive_count"/>
+    </resultMap>
+    <resultMap id="CigarShopItemResultMap" type="alibaba.illustration.entity.packMsg.CigarShopItem">
+        <id column="cigar_id" jdbcType="VARCHAR" property="cigar_id"/>
+        <id column="shop_id" jdbcType="VARCHAR" property="shop_id"/>
+        <result column="cigar_name" jdbcType="VARCHAR" property="cigar_name"/>
+        <result column="cigar_price" jdbcType="DOUBLE" property="cigar_price"/>
+        <result column="cigar_pic" jdbcType="VARCHAR" property="cigar_pic"/>
+        <result column="repertory" jdbcType="INTEGER" property="repertory"/>
+        <result column="sold_count" jdbcType="INTEGER" property="sold_count"/>
+    </resultMap>
+    <resultMap id="CigarResultMap" type="alibaba.illustration.entity.Cigar">
+        <id column="cigar_id" jdbcType="VARCHAR" property="cigar_id"/>
+        <result column="cigar_name" jdbcType="VARCHAR" property="cigar_name"/>
+        <result column="cigar_price" jdbcType="DOUBLE" property="cigar_price"/>
+        <result column="cigar_pic" jdbcType="VARCHAR" property="cigar_pic"/>
+        <result column="producer" jdbcType="VARCHAR" property="producer"/>
+        <result column="taste" jdbcType="VARCHAR" property="taste"/>
+        <result column="detail" jdbcType="VARCHAR" property="detail"/>
+        <result column="produce_price" jdbcType="DOUBLE" property="produce_price"/>
+    </resultMap>
+
+    <select id="getShops" resultType="alibaba.illustration.entity.CigarShop" resultMap="ShopResultMap">
+        select *
+        from table_shop A
+    </select>
+
+    <select id="getHaveShops" resultType="alibaba.illustration.entity.CigarShop" resultMap="ShopResultMap">
+        select A.shop_id,shop_name,shop_boss,shop_loc,shop_pic,shop_phone,customer_arrive_count
+        from relation_shop_user A
+        join table_shop B
+        on A.shop_id = B.shop_id
+        join table_user C
+        on A.user_id = C.user_id
+        and A.user_id = #{user_id}
+    </select>
+
+    <select id="getShop" resultType="alibaba.illustration.entity.CigarShop" resultMap="ShopResultMap">
+        select *
+        from table_shop
+        where shop_id = #{shop_id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getCigar" resultType="alibaba.illustration.entity.Cigar" resultMap="CigarResultMap">
+        select *
+        from table_cigar
+        where cigar_id = #{cigar_id,jdbcType=VARCHAR}
+    </select>
+
+    <select id="getCigarList" resultMap="CigarShopItemResultMap">
+        select *
+        from relation_shop_cigar A
+        join table_cigar B on A.cigar_id = B.cigar_id and A.shop_id=#{shop_id}
+    </select>
+
+    <select id="getLimitCigarList" resultMap="CigarShopItemResultMap">
+        select *
+        from relation_shop_cigar A
+        join table_cigar B on A.cigar_id = B.cigar_id and A.shop_id=#{shop_id}
+        <where>
+            <if test="minPrice gte 0">
+                cigar_price >= #{minPrice}
+            </if>
+            <if test="maxPrice gte 0">
+                and cigar_price <![CDATA[<=]]> #{maxPrice}
+            </if>
+        </where>
+    </select>
+
+</mapper>

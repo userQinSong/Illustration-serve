@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alibaba.illustration.dao.ill.CommentDao">
+    <resultMap id="CommentResultMap" type="alibaba.illustration.entity.ill.vo.CommentVo">
+        <id column="comment_id" jdbcType="BIGINT" property="id"/>
+        <result column="blog_id" jdbcType="VARCHAR" property="blogId"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="create_time" property="createTime"/>
+        <result column="is_delete" jdbcType="INTEGER" property="isDelete"/>
+        <result column="parent_id" jdbcType="BIGINT" property="parentId"/>
+        <result column="root_parent_id" jdbcType="BIGINT" property="rootParentId"/>
+        <result column="user_id" jdbcType="VARCHAR" property="userId"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="potrait_src" jdbcType="VARCHAR" property="potraitSrc"/>
+        <result column="like_count" jdbcType="BIGINT" property="likeCount"/>
+        <result column="unlike_count" jdbcType="BIGINT" property="unlikeCount"/>
+    </resultMap>
+    <resultMap id="RelationUserCommentAttitudeResultMap" type="alibaba.illustration.entity.ill.relation.Relation_User_Comment_Attitude">
+        <id column="id" jdbcType="BIGINT" property="relation_id"/>
+        <result column="user_id" jdbcType="VARCHAR" property="user_id"/>
+        <result column="comment_id" jdbcType="BIGINT" property="comment_id"/>
+        <result column="attitude" jdbcType="INTEGER" property="attitude"/>
+    </resultMap>
+    <sql id="comment_relation_key">
+        <trim suffixOverrides=",">
+            <if test="blogId!=null and blogId!=''">
+                blog_id,
+            </if>
+            <if test="userId!=null and userId!=''">
+                user_id,
+            </if>
+            <if test="id!=null and id!=''">
+                comment_id,
+            </if>
+        </trim>
+    </sql>
+    <sql id="comment_relation_value">
+        <trim suffixOverrides=",">
+            <if test="blogId!=null and blogId!=''">
+                #{blogId},
+            </if>
+            <if test="userId!=null and userId!=''">
+                #{userId},
+            </if>
+            <if test="id!=null and id!=''">
+                #{id},
+            </if>
+        </trim>
+    </sql>
+    <sql id="comment_key">
+        <trim suffixOverrides=",">
+            <if test="content!=null and content!=''">
+                content,
+            </if>
+            <if test="createTime!=null">
+                create_time,
+            </if>
+            <if test="isDelete!=null and isDelete!=''">
+                is_delete,
+            </if>
+            <if test="parentId!=null and parentId!=''">
+                parent_id,
+            </if>
+            <if test="rootParentId!=null and rootParentId!=''">
+                root_parent_id,
+            </if>
+        </trim>
+    </sql>
+    <sql id="comment_value">
+        <trim suffixOverrides=",">
+            <if test="content!=null and content!=''">
+                #{content},
+            </if>
+            <if test="createTime!=null">
+                #{createTime},
+            </if>
+            <if test="isDelete!=null and isDelete!=''">
+                #{isDelete},
+            </if>
+            <if test="parentId!=null and parentId!=''">
+                #{parentId},
+            </if>
+            <if test="rootParentId!=null and rootParentId!=''">
+                #{rootParentId},
+            </if>
+        </trim>
+    </sql>
+    <select id="queryAllComments" resultMap="CommentResultMap">
+        select
+        R.blog_id,
+        A.*,
+        G.*,
+        coalesce(B.like_count,0) as like_count,
+        coalesce(B.unlike_count,0) as unlike_count
+        from relation_user_comment_create R
+        join comment A on R.comment_id = A.comment_id
+        join user G on R.user_id = G.user_id
+        left join (
+            select
+            Q.comment_id,
+            sum(case when Q.attitude = 1 then 1 else 0 end) as like_count,
+            sum(case when Q.attitude = -1 then 1 else 0 end) as unlike_count
+            from relation_user_comment_attitude Q
+            group by Q.comment_id
+        ) B on A.comment_id = B.comment_id
+        where blog_id = #{blog_id} and R.is_delete = 0
+    </select>
+    <select id="queryAttitudePack" resultMap="CommentResultMap">
+        select
+        Q.comment_id,
+        sum(case when Q.attitude = 1 then 1 else 0 end) as like_count,
+        sum(case when Q.attitude = -1 then 1 else 0 end) as unlike_count
+        from relation_user_comment_attitude Q
+        group by Q.comment_id
+        having Q.comment_id = #{comment_id}
+    </select>
+
+    <select id="queryRootAllChilds" resultMap="CommentResultMap">
+        select
+        R.blog_id,
+        A.*,
+        G.*,
+        coalesce(B.like_count,0) as like_count,
+        coalesce(B.unlike_count,0) as unlike_count
+        from relation_user_comment_create R
+        join comment A on R.comment_id = A.comment_id
+        join user G on R.user_id = G.user_id
+        left join (
+        select
+        Q.comment_id,
+        sum(case when Q.attitude = 1 then 1 else 0 end) as like_count,
+        sum(case when Q.attitude = -1 then 1 else 0 end) as unlike_count
+        from relation_user_comment_attitude Q
+        group by Q.comment_id
+        ) B on A.comment_id = B.comment_id
+        where A.root_parent_id = #{root_id} and R.is_delete = 0
+    </select>
+
+    <select id="getCommentTotalCount" resultType="java.lang.Long">
+        select count(*) from relation_user_comment_create Q
+        join comment A on Q.comment_id = A.comment_id
+        <where>
+            Q.is_delete = 0
+            <if test="blog_id != null and blog_id != ''">
+               AND blog_id = #{blog_id}
+            </if>
+        </where>
+    </select>
+    <select id="queryAllBlogCommentAttitudes" resultMap="RelationUserCommentAttitudeResultMap">
+        select * from relation_user_comment_attitude Q
+        join comment A on Q.comment_id = A.comment_id
+        join relation_user_comment_create R on Q.comment_id = R.comment_id
+        join user B on Q.user_id = B.user_id
+        <where>
+            R.is_delete = 0
+            <if test="blog_id != null and blog_id != ''">
+                and R.blog_id = #{blog_id}
+            </if>
+            <if test="user_id != null and user_id != ''">
+                and Q.user_id = #{user_id}
+            </if>
+                and Q.attitude != 0
+        </where>
+    </select>
+    <insert id="insertComment" parameterType="alibaba.illustration.entity.ill.entity.Comment"  useGeneratedKeys="true" keyProperty="id">
+        insert into comment(<include refid="comment_key"/>)
+        values(<include refid="comment_value"/>);
+    </insert>
+    <insert id="insertCommentRelation" parameterType="alibaba.illustration.entity.ill.entity.Comment">
+        insert into relation_user_comment_create(<include refid="comment_relation_key"/>)
+        values(<include refid="comment_relation_value"/>);
+    </insert>
+    <update id="deleteById">
+        update relation_user_comment_create
+        set is_delete=1
+        where comment_id = #{comment_id}
+    </update>
+    <select id="queryRelationAttitude" resultMap="RelationUserCommentAttitudeResultMap">
+        select * from relation_user_comment_attitude
+        where user_id=#{user_id} and comment_id=#{comment_id}
+    </select>
+
+    <select id="queryCommentById" resultMap="CommentResultMap">
+        select Q.blog_id,A.*,B.* from relation_user_comment_create Q
+        join comment A on Q.comment_id = A.comment_id
+        join user B on Q.user_id = B.user_id
+        where Q.comment_id = #{comment_id} and Q.is_delete = 0
+    </select>
+
+
+    <insert id="insertRelationAttitude">
+        insert into relation_user_comment_attitude(user_id,comment_id,attitude)
+        values(#{user_id},#{comment_id},#{attitude})
+    </insert>
+
+    <update id="updateRelationAttitude">
+        update relation_user_comment_attitude
+        <set>
+            attitude=#{attitude}
+        </set>
+        where id = #{relation_id}
+    </update>
+</mapper>

@@ -1,0 +1,476 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="alibaba.illustration.dao.ill.IllustrationDao">
+    <resultMap id="PicoltVoResultMap" type="alibaba.illustration.entity.ill.pageResult.PicoltPageResult">
+        <association property="picolt" resultMap="PicoltResultMap"/>
+        <association property="creator" resultMap="UserResultMap"/>
+        <association property="attitude" resultMap="AttitudeResultMap"/>
+    </resultMap>
+    <resultMap id="PicVoResultMap" type="alibaba.illustration.entity.ill.pageResult.PicPageResult">
+        <association property="picVo" resultMap="PicVoMap"/>
+        <association property="user" resultMap="UserResultMap"/>
+        <association property="attitude" resultMap="AttitudeResultMap"/>
+    </resultMap>
+    <resultMap id="PicoltMap" type="alibaba.illustration.entity.ill.entity.Picolt">
+        <id column="picolt_id" jdbcType="VARCHAR" property="picolt_id"/>
+        <result column="picolt_name" jdbcType="VARCHAR" property="picolt_name"/>
+        <result column="picolt_tag" jdbcType="VARCHAR" property="picolt_tag"/>
+        <result column="picolt_cover" jdbcType="VARCHAR" property="picolt_cover"/>
+        <result column="brief_intro" jdbcType="VARCHAR" property="brief_intro"/>
+        <result column="create_time" jdbcType="DATE" property="create_time"/>
+        <result column="renew_time" jdbcType="DATE" property="renew_time"/>
+    </resultMap>
+    <resultMap id="PicoltResultMap" extends="PicoltMap" type="alibaba.illustration.entity.ill.vo.PicoltVo">
+        <result column="picolt_count" jdbcType="BIGINT" property="picolt_count"/>
+        <result column="picolt_download" jdbcType="BIGINT" property="picolt_download"/>
+        <result column="picolt_love" jdbcType="BIGINT" property="picolt_love"/>
+        <result column="picolt_collect" jdbcType="BIGINT" property="picolt_collect"/>
+    </resultMap>
+    <resultMap id="AttitudeResultMap" type="alibaba.illustration.entity.ill.entity.attitude.Attitude">
+        <result column="is_like" jdbcType="BOOLEAN" property="is_like"/>
+        <result column="is_collect" jdbcType="BOOLEAN" property="is_collect"/>
+    </resultMap>
+    <resultMap id="UserResultMap" type="alibaba.illustration.entity.ill.entity.User">
+        <id column="user_id" jdbcType="VARCHAR" property="user_id"/>
+        <result column="user_name" jdbcType="VARCHAR" property="user_name"/>
+        <result column="phone_number" jdbcType="VARCHAR" property="phone_number"/>
+        <result column="potrait_src" jdbcType="VARCHAR" property="potrait_src"/>
+        <result column="rank" jdbcType="INTEGER" property="rank"/>
+        <result column="attention" jdbcType="BIGINT" property="attention"/>
+        <result column="upload" jdbcType="BIGINT" property="upload"/>
+        <result column="be_attention" jdbcType="BIGINT" property="be_attention"/>
+    </resultMap>
+    <resultMap id="PicMap" type="alibaba.illustration.entity.ill.entity.Pic">
+        <id column="pic_id" jdbcType="VARCHAR" property="pic_id"/>
+        <result column="pic_name" jdbcType="VARCHAR" property="pic_name"/>
+        <result column="pic_src" jdbcType="VARCHAR" property="pic_src"/>
+        <result column="create_time" jdbcType="DATE" property="add_time"/>
+        <result column="pic_space_size" jdbcType="BIGINT" property="pic_space_size"/>
+        <result column="pic_type" jdbcType="VARCHAR" property="pic_type"/>
+    </resultMap>
+    <resultMap id="PicVoMap" extends="PicMap" type="alibaba.illustration.entity.ill.vo.PicVo">
+        <result column="creator_id" jdbcType="VARCHAR" property="creator_id"/>
+        <result column="like_count" jdbcType="BIGINT" property="like_count"/>
+        <result column="down_count" jdbcType="BIGINT" property="down_count"/>
+        <result column="collect_count" jdbcType="BIGINT" property="collect_count"/>
+    </resultMap>
+    <sql id="attitude_key">
+        <trim suffixOverrides=",">
+            <if test="attitude_person_id!=null and attitude_person_id!=''">
+                user_id
+            </if>
+            <if test="picolt_id!=null and picolt_id!=''">
+                ,picolt_id
+            </if>
+            <if test="change_type=='like'.toString()">
+                ,is_like
+            </if>
+            <if test="change_type=='collect'.toString()">
+                ,is_collect
+            </if>
+            <if test="change_type=='down'.toString()">
+                ,down_count
+            </if>
+        </trim>
+    </sql>
+    <sql id="attitude_value">
+        <trim suffixOverrides=",">
+            <if test="attitude_person_id!=null and attitude_person_id!=''">
+                #{attitude_person_id}
+            </if>
+            <if test="picolt_id!=null and picolt_id!=''">
+                ,#{picolt_id}
+            </if>
+            <if test="change_type=='like'.toString()">
+                ,1
+            </if>
+            <if test="change_type=='collect'.toString()">
+                ,1
+            </if>
+            <if test="change_type=='down'.toString()">
+                ,#{add_down_count}
+            </if>
+        </trim>
+    </sql>
+    <sql id="attitude_pic_key">
+        <trim suffixOverrides=",">
+            <if test="attitude_person_id!=null and attitude_person_id!=''">
+                user_id
+            </if>
+            <if test="pic_id!=null and pic_id!=''">
+                ,pic_id
+            </if>
+            <if test="change_type=='like'.toString()">
+                ,is_like
+            </if>
+            <if test="change_type=='collect'.toString()">
+                ,is_collect
+            </if>
+            <if test="change_type=='down'.toString()">
+                ,down_count
+            </if>
+        </trim>
+    </sql>
+    <sql id="attitude_pic_value">
+        <trim suffixOverrides=",">
+            <if test="attitude_person_id!=null and attitude_person_id!=''">
+                #{attitude_person_id}
+            </if>
+            <if test="pic_id!=null and pic_id!=''">
+                ,#{pic_id}
+            </if>
+            <if test="change_type=='like'.toString()">
+                ,1
+            </if>
+            <if test="change_type=='collect'.toString()">
+                ,1
+            </if>
+            <if test="change_type=='down'.toString()">
+                ,#{add_down_count}
+            </if>
+        </trim>
+    </sql>
+    <select id="getPicoltList" parameterType="alibaba.illustration.entity.ill.pageParams.picolt.PicoltListParam" resultMap="PicoltVoResultMap">
+        SELECT
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            COALESCE ( E.is_like, 0 ) AS is_like,
+            COALESCE ( E.is_collect, 0 ) AS is_collect,
+        </if>
+        A.*,
+        B.*,
+        COALESCE ( D.picolt_love, 0 ) AS picolt_love,
+        COALESCE ( D.picolt_collect, 0 ) AS picolt_collect,
+        COALESCE ( D.picolt_download, 0 ) AS picolt_download
+        FROM
+        relation_user_picolt_create Q
+        JOIN picolt A ON Q.picolt_id = A.picolt_id
+        JOIN USER B ON Q.user_id = B.user_id
+        LEFT JOIN (
+        SELECT
+        E.picolt_id,
+        sum( E.is_like ) AS picolt_love,
+        sum( E.is_collect ) AS picolt_collect,
+        sum( E.down_count ) AS picolt_download
+        FROM
+        relation_user_picolt_attitude E
+        GROUP BY
+        E.picolt_id
+        ) D ON Q.picolt_id = D.picolt_id
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            LEFT JOIN (
+            SELECT
+            Q.picolt_id,
+            Q.is_like,
+            Q.is_collect
+            FROM
+            relation_user_picolt_attitude Q
+            WHERE
+            Q.user_id = #{attitude_person_id}
+            AND ( Q.is_like = 1 OR Q.is_collect = 1 )
+            ) E ON A.picolt_id = E.picolt_id
+        </if>
+        <if test="user_id != null and user_id != '' and search_like == '1'.toString()">
+            join relation_user_picolt_attitude C on A.picolt_id = C.picolt_id
+        </if>
+        <where>
+            Q.is_delete = 0
+            <if test="picolt_name != null and picolt_name != ''">
+                AND A.picolt_name LIKE CONCAT('%',#{picolt_name},'%')
+            </if>
+            <if test="picolt_tag != null and picolt_tag != ''">
+                AND A.picolt_tag LIKE CONCAT('%',#{picolt_tag},'%')
+            </if>
+            <if test="picolt_type != null and picolt_type != ''">
+                AND A.picolt_type LIKE CONCAT('%',#{picolt_type},'%')
+            </if>
+            <if test="user_name != null and user_name != ''">
+                and B.user_name = #{user_name}
+            </if>
+            <if test="user_id != null and user_id != ''">
+                <if test="search_upload == '1'.toString()">
+                    and B.user_id = #{user_id}
+                </if>
+                <if test="search_like == '1'.toString()">
+                    and C.user_id = #{user_id} and C.is_like = 1
+                </if>
+            </if>
+        </where>
+    </select>
+
+    <select id="getPicolt" resultMap="PicoltVoResultMap">
+        SELECT
+        A.*,
+        B.*,
+        COALESCE ( D.picolt_love, 0 ) AS picolt_love,
+        COALESCE ( D.picolt_collect, 0 ) AS picolt_collect,
+        COALESCE ( D.picolt_download, 0 ) AS picolt_download
+        FROM
+        relation_user_picolt_create Q
+        JOIN picolt A ON Q.picolt_id = A.picolt_id
+        JOIN USER B ON Q.user_id = B.user_id
+        LEFT JOIN (
+        SELECT
+        E.picolt_id,
+        sum( E.is_like ) AS picolt_love,
+        sum( E.is_collect ) AS picolt_collect,
+        sum( E.down_count ) AS picolt_download
+        FROM
+        relation_user_picolt_attitude E
+        GROUP BY
+        E.picolt_id
+        ) D ON Q.picolt_id = D.picolt_id
+        <where>
+            Q.is_delete = 0
+            <if test="picolt_id != null and picolt_id != ''">
+                and A.picolt_id = #{picolt_id}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPicoltAttitudeByParam" parameterType="alibaba.illustration.entity.ill.pageParams.picolt.PicoltDetailParam" resultMap="AttitudeResultMap">
+        select
+        COALESCE ( Q.is_like, 0 ) AS is_like,
+        COALESCE ( Q.is_collect, 0 ) AS is_collect
+        from relation_user_picolt_attitude Q
+        where Q.user_id = #{attitude_person_id} and Q.picolt_id = #{picolt_id}
+    </select>
+
+    <select id="getPicoltContainPicCount" resultType="java.lang.Long">
+        select count(*) from relation_picolt_pic_contain R
+        where R.picolt_id = #{picolt_id} and R.is_delete = 0
+    </select>
+
+    <select id="getPicVoListByPicoltId" resultMap="PicVoResultMap">
+        SELECT
+        D.*,
+        B.picolt_id,
+        A.*,
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            coalesce(E.is_like,0) as is_like,
+            coalesce(E.is_collect,0) as is_collect,
+        </if>
+        B.add_time,
+        COALESCE ( C.like_count, 0 ) AS like_count,
+        COALESCE ( C.down_count, 0 ) AS down_count
+        FROM
+        pic A
+        LEFT JOIN relation_picolt_pic_contain B ON A.pic_id = B.pic_id
+        JOIN relation_user_pic_create D ON A.pic_id = D.pic_id
+        LEFT JOIN (
+        SELECT
+        E.pic_id,
+        sum( E.is_like ) AS like_count,
+        sum( E.down_count ) AS down_count
+        FROM
+        relation_user_pic_attitude E
+        GROUP BY
+        E.pic_id
+        ) C ON A.pic_id = C.pic_id
+        LEFT JOIN (
+        SELECT
+        R.pic_id,
+        R.is_like,
+        R.is_collect
+        FROM
+        relation_user_pic_attitude R
+        WHERE
+        R.user_id = #{attitude_person_id}) E on E.pic_id = A.pic_id
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            left join (	select * from relation_user_pic_attitude A
+            where A.user_id = #{attitude_person_id}) F on F.pic_id = A.pic_id
+        </if>
+        <where>
+            <if test="picolt_id != null and picolt_id != ''">
+                B.picolt_id = #{picolt_id} and B.is_delete = 0
+            </if>
+        </where>
+    </select>
+    <select id="getPicVoListByUserLiked" parameterType="alibaba.illustration.entity.ill.pageParams.pic.PicParam" resultMap="PicVoResultMap">
+        SELECT
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            coalesce(E.is_like,0) as is_like,
+            coalesce(E.is_collect,0) as is_collect,
+        </if>
+        B.*,
+        A.*
+        FROM
+        relation_user_pic_create Q
+        JOIN (
+        SELECT
+            B.*,
+            COALESCE ( sum( Q.is_like ), 0 ) AS like_count,
+            COALESCE ( sum( Q.is_collect ), 0 ) AS collect_count,
+            COALESCE ( sum( Q.down_count ), 0 ) AS down_count
+        FROM
+		relation_user_pic_attitude Q
+		JOIN (
+		SELECT
+			B.*
+		FROM
+			relation_user_pic_attitude Q
+			JOIN pic B ON Q.pic_id = B.pic_id
+		WHERE
+			Q.is_like = 1
+			AND Q.user_id = #{user_id}
+		) B ON Q.pic_id = B.pic_id
+        GROUP BY
+            B.pic_id
+        ) A ON Q.pic_id = A.pic_id
+        JOIN USER B ON Q.user_id = B.user_id
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            left join (	select * from relation_user_pic_attitude A
+            where A.user_id = #{attitude_person_id}) E on E.pic_id = A.pic_id
+        </if>
+    </select>
+    <select id="getPicVoListByUserCreated" parameterType="alibaba.illustration.entity.ill.pageParams.pic.PicParam" resultMap="PicVoResultMap">
+        select
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            coalesce(E.is_like,0) as is_like,
+            coalesce(E.is_collect,0) as is_collect,
+        </if>
+        D.*,
+        C.user_name,
+        C.potrait_src
+        from user C join
+        (SELECT
+        Q.user_id,
+        A.*,
+        COALESCE ( B.likes, 0 ) AS like_count,
+        COALESCE ( B.collects, 0 ) AS collect_count,
+        COALESCE ( b.downs, 0 ) AS down_count
+        FROM
+        relation_user_pic_create Q
+        JOIN pic A ON Q.pic_id = A.pic_id
+        LEFT JOIN (
+        SELECT
+        T.pic_id,
+        COALESCE ( sum( T.is_like ), 0 ) AS likes,
+        COALESCE ( sum( T.is_collect ), 0 ) AS collects,
+        COALESCE ( sum( T.down_count ), 0 ) AS downs
+        FROM
+        relation_user_pic_attitude T
+        GROUP BY
+        T.pic_id
+        ) B ON Q.pic_id = B.pic_id
+        where
+        user_id = #{user_id} AND Q.is_delete = 0) D
+		on C.user_id = D.user_id
+        <if test="attitude_person_id != null and attitude_person_id != ''">
+            left join (	select * from relation_user_pic_attitude A
+            where A.user_id = #{attitude_person_id}) E on E.pic_id = D.pic_id
+        </if>
+    </select>
+
+    <select id="isPicoltAttitudeExist" parameterType="alibaba.illustration.entity.ill.pageParams.picolt.PicoltDetailParam" resultType="java.lang.Boolean">
+        select count(*)
+        from relation_user_picolt_attitude Q
+        WHERE
+        Q.user_id = #{attitude_person_id} AND Q.picolt_id = #{picolt_id}
+    </select>
+    <select id="isPicAttitudeExist" parameterType="alibaba.illustration.entity.ill.pageParams.pic.PicDetailParam" resultType="java.lang.Boolean">
+        select count(*)
+        from relation_user_pic_attitude Q
+        WHERE
+        Q.user_id = #{attitude_person_id} AND Q.pic_id = #{pic_id}
+    </select>
+    <insert id="insertPicoltAttitude" parameterType="alibaba.illustration.entity.ill.pageParams.picolt.PicoltDetailParam">
+        insert into relation_user_picolt_attitude(<include refid="attitude_key"/>)
+        values(<include refid="attitude_value"/>)
+    </insert>
+    <insert id="insertPicAttitude" parameterType="alibaba.illustration.entity.ill.pageParams.pic.PicDetailParam">
+        insert into relation_user_pic_attitude(<include refid="attitude_pic_key"/>)
+        values(<include refid="attitude_pic_value"/>)
+    </insert>
+    <update id="updatePicoltAttitude" parameterType="alibaba.illustration.entity.ill.pageParams.picolt.PicoltDetailParam">
+        <if test="change_type != null and change_type != ''">
+            UPDATE relation_user_picolt_attitude Q
+            SET
+            <if test="change_type == 'like'.toString()">
+                Q.is_like = abs( Q.is_like - 1 )
+            </if>
+            <if test="change_type == 'collect'.toString()">
+                Q.is_collect = abs( Q.is_collect - 1 )
+            </if>
+            <if test="change_type == 'down'.toString()">
+                Q.down_count = Q.down_count + #{add_down_count}
+            </if>
+            WHERE
+            Q.user_id = #{attitude_person_id} AND Q.picolt_id = #{picolt_id}
+        </if>
+    </update>
+    <update id="updatePicAttitude" parameterType="alibaba.illustration.entity.ill.pageParams.pic.PicDetailParam">
+        <if test="change_type != null and change_type != ''">
+            UPDATE relation_user_pic_attitude Q
+            SET
+            <if test="change_type == 'like'.toString()">
+                Q.is_like = abs( Q.is_like - 1 )
+            </if>
+            <if test="change_type == 'collect'.toString()">
+                Q.is_collect = abs( Q.is_collect - 1 )
+            </if>
+            <if test="change_type == 'down'.toString()">
+                Q.down_count = Q.down_count + #{add_down_count}
+            </if>
+            WHERE
+            Q.user_id = #{attitude_person_id} AND Q.pic_id = #{pic_id}
+        </if>
+    </update>
+
+    <insert id="insertPics" parameterType="java.util.List">
+        INSERT INTO pic(
+            pic_id,
+            pic_src,
+            pic_name,
+            pic_space_size,
+            pic_type,
+            upload_time
+        ) VALUES
+        <foreach item="data" collection="list" separator=",">
+            (
+            #{data.pic_id},
+            #{data.pic_src},
+            #{data.pic_name},
+            #{data.pic_space_size},
+            #{data.pic_type},
+            #{data.add_time}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertPicolt" parameterType="alibaba.illustration.entity.ill.entity.Picolt">
+        insert into
+        picolt(picolt_id,picolt_name,picolt_tag,picolt_cover,create_time,brief_intro,renew_time)
+        values(#{picolt_id},#{picolt_name},#{picolt_tag},#{picolt_cover},#{create_time},#{brief_intro},#{renew_time})
+    </insert>
+    <insert id="insertRelationPicoltPicContain">
+        INSERT INTO relation_picolt_pic_contain(
+        picolt_id,
+        pic_id,
+        add_time
+        ) VALUES
+        <foreach item="data" collection="list" separator=",">
+            (
+            #{picolt_id},
+            #{data.pic_id},
+            #{data.add_time}
+            )
+        </foreach>
+    </insert>
+    <insert id="insertRelationUserPicoltCreate">
+        INSERT INTO
+        relation_user_picolt_create(user_id,picolt_id)
+        VALUES(#{user_id},#{picolt_id})
+    </insert>
+    <insert id="insertRelationUserPicCreate">
+        INSERT INTO relation_user_pic_create(
+        user_id,
+        pic_id
+        ) VALUES
+        <foreach item="data" collection="list" separator=",">
+            (
+            #{user_id},
+            #{data.pic_id}
+            )
+        </foreach>
+    </insert>
+</mapper>
